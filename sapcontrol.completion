@@ -28,8 +28,16 @@ _sapcontrol_completions() {
   local compline="${compwords[*]}"
 
   case "$compline" in
-    ''*'-function GetSystemInstanceList')
-      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "$(echo {0..9})")" -- "$cur" )
+    ''*'-function ConfigureLogFileList remove')
+      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A file -- "$cur" )
+      ;;
+
+    ''*'-function ConfigureLogFileList add')
+      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A file -- "$cur" )
+      ;;
+
+    ''*'-function ConfigureLogFileList set')
+      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A file -- "$cur" )
       ;;
 
     ''*'-function ConfigureLogFileList')
@@ -52,35 +60,43 @@ _sapcontrol_completions() {
       while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A file -- "$cur" )
       ;;
 
-    ''*'-function RestartInstance')
-      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "$(echo {0..9})")" -- "$cur" )
+    ''*'-function CheckParameter')
+      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A file -- "$cur" )
       ;;
 
     ''*'-function ReadConfigFile')
       while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A file -- "$cur" )
       ;;
 
-    ''*'-function RestartSystem')
-      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "ALL SCS DIALOG ABAP J2EE TREX ENQREP HDB ALLNOHDB LEVEL")" -- "$cur" )
+    ''*'-function InstanceStart')
+      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A hostname -- "$cur" )
       ;;
 
-    ''*'-function ReadSnapshot')
-      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A file -- "$cur" )
+    ''*'-function RestartSystem')
+      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "ALL SCS DIALOG ABAP J2EE TREX ENQREP HDB ALLNOHDB LEVEL")" -- "$cur" )
       ;;
 
     ''*'-function GetCallstack')
       while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "$(find /proc/ -maxdepth 1 -user "${USER}" -name '[0-9]*' -printf '%P ')")" -- "$cur" )
       ;;
 
-    ''*'-function UpdateSystem')
-      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "$(echo {0..9})")" -- "$cur" )
-      ;;
-
     ''*'-function StartService')
       while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "$([ -e /usr/sap ] && find /usr/sap/ -maxdepth 1 -name '[A-Z0-9][A-Z0-9][A-Z0-9]' -type d -printf '%P')")" -- "$cur" )
       ;;
 
+    ''*'-function InstanceStop')
+      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A hostname -- "$cur" )
+      ;;
+
+    ''*'-function ReadSnapshot')
+      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A file -- "$cur" )
+      ;;
+
     ''*'-function StartSystem')
+      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "ALL SCS DIALOG ABAP J2EE TREX ENQREP HDB ALLNOHDB LEVEL")" -- "$cur" )
+      ;;
+
+    ''*'-function StopSystem')
       while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "ALL SCS DIALOG ABAP J2EE TREX ENQREP HDB ALLNOHDB LEVEL")" -- "$cur" )
       ;;
 
@@ -88,16 +104,16 @@ _sapcontrol_completions() {
       while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "$(find /proc/ -maxdepth 1 -user "${USER}" -name '[0-9]*' -printf '%P ')")" -- "$cur" )
       ;;
 
-    ''*'-function StopSystem')
-      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "ALL SCS DIALOG ABAP J2EE TREX ENQREP HDB ALLNOHDB LEVEL")" -- "$cur" )
-      ;;
-
     ''*'-function DeletePSE')
       while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A file -- "$cur" )
       ;;
 
-    ''*'-function Stop')
-      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "$(echo {0..9})")" -- "$cur" )
+    ''*'-function OSExecute')
+      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A command -- "$cur" )
+      ;;
+
+    ''*'-function Bootstrap')
+      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A hostname -- "$cur" )
       ;;
 
     ''*'-systempki')
@@ -112,16 +128,8 @@ _sapcontrol_completions() {
       while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "list script custom")" -- "$cur" )
       ;;
 
-    ''*'-repeat')
-      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "$(echo '\-1' {1..9})")" -- "$cur" )
-      ;;
-
     ''*'-trace')
       while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -A file -- "$cur" )
-      ;;
-
-    ''*'-tmax')
-      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "$(echo {0..9})")" -- "$cur" )
       ;;
 
     ''*'-host')
@@ -136,12 +144,8 @@ _sapcontrol_completions() {
       while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "NI_HTTP NI_HTTPS GSOAP_HTTP WINHTTP WINHTTPS PIPE")" -- "$cur" )
       ;;
 
-    ''*'-tio')
-      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "$(echo {0..9})")" -- "$cur" )
-      ;;
-
     ''*'-nr')
-      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "1 2 3")" -- "$cur" )
+      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_sapcontrol_completions_filter "$(echo {00..98})")" -- "$cur" )
       ;;
 
     *)

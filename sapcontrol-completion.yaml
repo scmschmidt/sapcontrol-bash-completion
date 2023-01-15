@@ -1,37 +1,26 @@
 # This is the input configuration for 'completely' (https://github.com/DannyBen/completely)
-# to generate the bash completion script.
-# Sadly `completely` has limitations in the YAML configuration, making it impossible to have complex
-# arguments (more then one argument for an option). Therefore completion of options like `-repeat`
-# or `user` is only partially possible.
+# to generate the bash completion script for `sapcontrol`.
 #
 # To generate the completion run: completely generate sapcontrol-completion.yaml sapcontrol.completion
-# 
-# Currently implemented fully are:
 #
-#   -prot       -trace      -queryuser      -format 
-#   -host       -systempki  -tio            -tmax  
-#   
+# The following rules for the implemented completion apply:
 #
-# Currently implemented partially are:
-#
-#   -user       Only the first argument (username) has completion, second one (password) has not.
-#   -repeat     Only the first argument (<N>) has a completion, second one (<D>) has not.
-#   -nr         Currently dummy completion with a one-digit number.
-#   -function   Not all functions have full completion yet.
+#   - Options with multiple variable arguments (like `-repeat`) have at best only a completion
+#     for the first argument (limitation of shell globing).
+#   - Options where no sensible suggestions are possible (like `-function ParameterValue [<parameter>]`)
+#     have no completion.
+#   - If the meaning of an argument is not clear, no completion exists.
+#     (People with deeper SAP knowledge may contribute here!)  
 #
 #
-# v0.2
+# v0.3
 #
 #
-# Todo:         - Investigate if we find a way with the (pathname) expansion to support
-#                 more then one argument for an option.
-#               - Add meaningful completion for the instance number to `-nr`.
-#               - Implement missing completion fur functions.  
-#
+# Todo:         - Check if we can determine valid instance numbers easily.
 #
 # Changelog:    29.09.2022  v0.1  - Starting this huge task
 #               14.01.2023  v0.2  - extend implementation
-#
+#               15.01.2023  v0.3  - so far everything implemented what seems possible
 # 
 # SYNOPSIS
 #
@@ -218,7 +207,7 @@
 #     CheckSystemCertificates <verifcation pse>
 
 
-sapcontrol: &base 
+sapcontrol:
   - -prot
   - -trace
   - -debug
@@ -244,17 +233,9 @@ sapcontrol *-prot:
 sapcontrol *-trace:
   - <file>
 
-# Currently we only suggest users, but not passwords ('-user <user> <password>')', due to `completely` limitations.
+# We only suggest users, but no passwords ('-user <user> <password>')'.
 sapcontrol *-user:
   - <user>
-
-# Currently we only support '<N>', but not '<D>' ('-repeat <N> <D>'), due to `completely` limitations. 
-sapcontrol *-repeat:
-  - $(echo '\-1' {1..9})
-
-# Works, but normal expansion is too limited :-(
-# sapcontrol *-repeat '[[:digit:]]':
-#   - $(echo '\-1' {1..9})
 
 sapcontrol *-format:
   - list
@@ -271,16 +252,8 @@ sapcontrol *-host:
 sapcontrol *-systempki:
   - <file>  
 
-sapcontrol *-tio:
-  - $(echo {0..9})
-
-sapcontrol *-tmax:
-  - $(echo {0..9})
-
-sapcontrol *-nr:
-  - '1'
-  - '2'
-  - '3'
+sapcontrol *-nr:  
+  - $(echo {00..98})
 
 sapcontrol *-function:
   - Start
@@ -411,41 +384,47 @@ sapcontrol *-function StartService:
 sapcontrol *-function ReadConfigFile:
   - <file>
 
-# NEWLY IMPLEMENTED
-
 sapcontrol *-function DeletePSE:
   - <file>
 
-sapcontrol *-function ReadDeveloperTrace:    # PARTIALLY IMPLEMENTED!  <filename> <filesize>
+# Only filename suggestion. No completion for second argument <filesize>
+sapcontrol *-function ReadDeveloperTrace:
   - <file>
 
-sapcontrol *-function ConfigureLogFileList:  # PARTIALLY IMPLEMENTED! set|add|remove [<filename1> <filename2>... <filenameN>]
+sapcontrol *-function ConfigureLogFileList:
   - set
   - add
   - remove 
 
-sapcontrol *-function ReadSnapshot:          # PARTIALLY IMPLEMENTED! <filename> [<local filename>]
+# Only the first file can be suggested.
+sapcontrol *-function ConfigureLogFileList set:
   - <file>
 
-sapcontrol *-function DeleteSnapshots:       # PARTIALLY IMPLEMENTED! <filename1> [<filename2>... <filenameN>]
+# Only the first file can be suggested.
+sapcontrol *-function ConfigureLogFileList add:
   - <file>
 
-sapcontrol *-function Stop:
-  - $(echo {0..9})
+# Only the first file can be suggested.
+sapcontrol *-function ConfigureLogFileList remove:
+  - <file>
 
-sapcontrol *-function RestartInstance:        # PARTIALLY IMPLEMENTED!  [<softtimeout sec> [<runlevel>]]
-  - $(echo {0..9})
+# Only the first file can be suggested.
+sapcontrol *-function ReadSnapshot:
+  - <file>
+
+# Only the first file can be suggested.
+sapcontrol *-function DeleteSnapshots:
+  - <file>
 
 sapcontrol *-function GetCallstack:
   - $(find /proc/ -maxdepth 1 -user "${USER}" -name '[0-9]*' -printf '%P ')
 
-sapcontrol *-function SendSignal:             # PARTIALLY IMPLEMENTED! <pid> <signal>
+# Only PID, but not signal gets suggested.
+sapcontrol *-function SendSignal:
   - $(find /proc/ -maxdepth 1 -user "${USER}" -name '[0-9]*' -printf '%P ')
 
-sapcontrol *-function GetSystemInstanceList:
-  - $(echo {0..9})
-
-sapcontrol *-function StartSystem:            # PARTIALLY IMPLEMENTED! [ALL|SCS|DIALOG|ABAP|J2EE|TREX|ENQREP|HDB|ALLNOHDB|LEVEL <level> [<waittimeout sec> [<runlevel>]]]
+# Only the first argument gets suggestions.
+sapcontrol *-function StartSystem:
   - ALL
   - SCS
   - DIALOG
@@ -457,7 +436,8 @@ sapcontrol *-function StartSystem:            # PARTIALLY IMPLEMENTED! [ALL|SCS|
   - ALLNOHDB
   - LEVEL
 
-sapcontrol *-function StopSystem:             # PARTIALLY IMPLEMENTED! [ALL|SCS|DIALOG|ABAP|J2EE|TREX|ENQREP|HDB|ALLNOHDB|LEVEL <level> [<waittimeout sec> [<softtimeout sec>]]]
+# Only the first argument gets suggestions.
+sapcontrol *-function StopSystem:
   - ALL
   - SCS
   - DIALOG
@@ -469,7 +449,8 @@ sapcontrol *-function StopSystem:             # PARTIALLY IMPLEMENTED! [ALL|SCS|
   - ALLNOHDB
   - LEVEL
 
-sapcontrol *-function RestartSystem:          # PARTIALLY IMPLEMENTED! [ALL|SCS|DIALOG|ABAP|J2EE|TREX|ENQREP|HDB|ALLNOHDB|LEVEL <level> [<waittimeout sec> [<softtimeout sec> [<runlevel>]]]]
+# Only the first argument gets suggestions.
+sapcontrol *-function RestartSystem:
   - ALL
   - SCS
   - DIALOG
@@ -480,9 +461,6 @@ sapcontrol *-function RestartSystem:          # PARTIALLY IMPLEMENTED! [ALL|SCS|
   - HDB
   - ALLNOHDB
   - LEVEL
-
-sapcontrol *-function UpdateSystem:           # PARTIALLY IMPLEMENTED! [<waittimeout sec> [<softtimeout sec> [<force>]]]
-  - $(echo {0..9})
 
 sapcontrol *-function RequestLogonFile:
   - <user>
@@ -490,47 +468,22 @@ sapcontrol *-function RequestLogonFile:
 sapcontrol *-function EnqRemoveUserLocks:
   - <user>
 
-# THESE FUNCTIONS LACK THE PARAMETER IMPLEMENTATION:
-#
-#   - Start [runlevel]
-#   - InstanceStart <hostname> <instance number> [<runlevel>]
-#   - Bootstrap [<hostname> <instance number>]
-#   - InstanceStop <hostname> <instance number> [<softtimeout sec>]
-#   - ParameterValue [<parameter>]
-#   - AnalyseLogFiles [<severity 0..2> [<maxentries> [<starttime YYYY MM DD HH:MM:SS> <endtime YYYY MM DD HH:MM:SS>]]] 
-#   - CreateSnapshot [<description> [<datcol_param> [<analyse_severity -1..2> [<analyse_maxentries> [<analyse_starttime YYYY MM DD HH:MM:SS> <analyse_endtime YYYY MM DD HH:MM:SS> [<maxentries> [<filename1> ... <filenameN>]]]]]]]
-#   - GetProcessParameter <processtype> [pid]
-#   - SetProcessParameter <processtype> <pid> <parameter> <value1> [<value2> ... <valueN>]
-#   - SetProcessParameter2 <processtype> <pid> [DYNAMIC|PERSIST|DYNAMIC_PERSIST] <parameter> <value1> [<value2> ... <valueN>]
-#   - CheckParameter [<profile> [<default profile>]]
-#   - OSExecute <command> <async> <timeout> <protocolfile>
-#   - AccessCheck <function>
-#   - GetSecNetworkId <service_ip> <service_port> [<version> [<challenge>]]
-#   - GetNetworkId <service_ip> <service_port> [<version>]
-#   - UpdateSystemPKI [<force>]
-#   - UpdateInstancePSE [<force>]
-#   - StorePSE <server filename> <local filename> [<psemode> [<overwrite>]]   
-#   - CheckPSE <server filename> <local filename>
-#   - CreatePSECredential <server filename> <pin>
-#   - HAFailoverToNode <node>
-#   - HASetMaintenanceMode [<mode> [<instance_only>]]
-#   - HACheckMaintenanceMode [<instance_only>]
-#   - ABAPGetSystemWPTable [<activeonly>]
-#   - ABAPSetServerInactive [<inactive>]
-#   - J2EEControlProcess <processname> <function>
-#   - J2EEControlCluster <processname> <function> [<hostname> <instance number>]
-#   - J2EEEnableDbgSession <client> [<processname> <debugflags>]
-#   - J2EEDisableDbgSession <debugkey>
-#   - J2EEGetThreadCallStack [<threadindex>]
-#   - J2EEGetThreadTaskStack [<threadindex>]
-#   - J2EEControlComponents <process name> <operation> <componenttype> <componentname1>,...,<componentnameN>
-#   - GWCancelConnections <connection1> ... <connectionN>
-#   - GWDeleteConnections <connection1> ... <connectionN>
-#   - GWDeleteClients <client1> ... <clientN>
-#   - StartWait <timeout sec> <delay sec> [<runlevel>]
-#   - StopWait <timeout sec> <delay sec>
-#   - WaitforStarted <timeout sec> <delay sec>
-#   - WaitforStopped <timeout sec> <delay sec>
-#   - RestartServiceWait <timeout sec> <delay sec>
-#   - WaitforServiceStarted <timeout sec> <delay sec>
-#   - CheckSystemCertificates <verifcation pse>
+# Only the first argument gets suggestions.
+sapcontrol *-function InstanceStart:
+  - <hostname>
+
+# Only the first argument gets suggestions.
+sapcontrol *-function Bootstrap:
+  - <hostname>
+
+# Only the first argument gets suggestions.
+sapcontrol *-function InstanceStop:
+  - <hostname>
+
+# Only the first argument gets suggestions.
+sapcontrol *-function CheckParameter:
+  - <file>
+
+# Only the first argument gets suggestions.
+sapcontrol *-function OSExecute:
+  - <command>
